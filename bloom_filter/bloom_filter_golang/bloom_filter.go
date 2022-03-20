@@ -1,25 +1,10 @@
 package bloom_filter
 
 import (
-	"crypto/sha1"
-
 	"golang.org/x/exp/constraints"
 )
 
 const MinFilterArraySize = 10
-
-func ShaFunc() HashFunc[string] {
-	return func(hash string) int {
-		s := sha1.New()
-		s.Write([]byte(hash))
-		b := s.Sum(nil)
-		sum := 0
-		for _, v := range b {
-			sum += int(v)
-		}
-		return sum
-	}
-}
 
 type HashFunc[K constraints.Ordered] func(K) int
 type BloomFilter[K constraints.Ordered] struct {
