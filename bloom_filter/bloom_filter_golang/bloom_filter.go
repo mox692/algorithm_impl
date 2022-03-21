@@ -5,13 +5,30 @@ import (
 )
 
 const MinFilterArraySize = 10
-
-type HashFunc[K constraints.Ordered] func(K) int
+// TODO: Kは
+//
+// type Hash interface {
+// 	Hash() uint32
+// }
+// type Hashable interface {
+// 	Hash
+// 	constraints.Ordered
+// }
+//
+// として、
+//
+// type HashFunc[K Hashable] func(K) int
+//
+// としたいけど、今のgenericsの機能だとできないみたい
 type BloomFilter[K constraints.Ordered] struct {
 	array    []int
 	hashFunc []HashFunc[K]
 }
 
+type HashFunc[K constraints.Ordered] func(K) int
+
+// bloomFilterにkey-value pairをかける.
+// keyはハッシュ化され(uint値)、そのindexの要素がincrementされる
 func Set[K constraints.Ordered](self *BloomFilter[K], key K) {
 	for _, f := range self.hashFunc {
 		v := f(key) % len(self.array)
