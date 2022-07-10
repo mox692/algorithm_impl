@@ -9,3 +9,5 @@
 - [ ] merge sort
 - [ ] insertion sort
 - [ ] trie_tree
+- [x] stack
+ 
