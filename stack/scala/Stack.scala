@@ -16,6 +16,7 @@ class Stack[A] {
 }
 
 // ref: https://codereview.stackexchange.com/questions/253095/stack-implementation-in-scala
+// Listを使ったstack. こっちのがscalaっぽい？
 class StackWithList[A] {
     private var list: List[A] = List[A]()
     def push(elm: A) = {
