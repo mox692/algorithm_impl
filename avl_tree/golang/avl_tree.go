@@ -32,28 +32,31 @@ func (t avlTree) Get(key int) *string {
 	if t.root == nil {
 		return nil
 	}
-	return getRec(t.root, key)
+	val, _ := getRec(t.root, key)
+	return val
 }
 
-func getRec(n *node, key int) *string {
+func getRec(n *node, key int) (*string, *node) {
 	cur := n.key
 	if key < *cur {
 		if n.l == nil {
-			return nil
+			return nil, n
 		}
 		return getRec(n.l, key)
 	} else if key > *cur {
 		if n.r == nil {
-			return nil
+			return nil, n
 		}
 		return getRec(n.r, key)
 	} else if key == *cur {
-		return &n.val
+		return &n.val, n
 	}
-	return nil
+	return nil, n
 }
 
-func (t avlTree) Delete(key int) {}
+func (t avlTree) Delete(key int) {
+	// 見つける
+}
 
 func NewAvlTree() *avlTree {
 	return &avlTree{

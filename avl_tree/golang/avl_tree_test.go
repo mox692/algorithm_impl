@@ -11,7 +11,7 @@ func Test_Bisic(t *testing.T) {
 	tr.Set(3, "three")
 	tr.Set(4, "four")
 	tr.Set(5, "five")
-	if got := *tr.Get(3); got != "one" {
+	if got := *tr.Get(1); got != "one" {
 		t.Errorf("expect %s, got %s\n", "one", got)
 	}
 	if got := *tr.Get(2); got != "two" {
