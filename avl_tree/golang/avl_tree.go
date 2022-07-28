@@ -158,30 +158,18 @@ func checkBalanceRec(n *node, from direction) {
 		// バランス結果を反映するようにする.
 		switch b {
 		case UnBalancedLinearRight:
-			if parent == nil {
-				// この時、rootはn
-				ncopy := newNode(n, n.key, n.val)
-				n.key = n.r.key
-				n.val = n.r.val
-				n.l = ncopy
-				n.r = n.r.r
-				n.parent = nil
-				ncopy.parent = n
-				n.rh = 1
-				n.lh = 1
-				n.r.rh = 0
-				n.r.lh = 0
-				n.l.rh = 0
-				n.l.lh = 0
-				return
-			}
 			ncopy := newNode(n, n.key, n.val)
 			n.key = n.r.key
 			n.val = n.r.val
 			n.l = ncopy
 			n.r = n.r.r
-			n.parent = parent
+			if parent == nil {
+				n.parent = nil
+			} else {
+				n.parent = parent
+			}
 			ncopy.parent = n
+			n.r.parent = n
 			n.rh = 1
 			n.lh = 1
 			n.r.rh = 0
@@ -190,30 +178,18 @@ func checkBalanceRec(n *node, from direction) {
 			n.l.lh = 0
 			return
 		case UnBalancedLinearLeft:
-			if parent == nil {
-				// この時、rootはn
-				ncopy := newNode(n, n.key, n.val)
-				n.key = n.l.key
-				n.val = n.l.val
-				n.r = ncopy
-				n.l = n.l.l
-				n.parent = nil
-				ncopy.parent = n
-				n.rh = 1
-				n.lh = 1
-				n.r.rh = 0
-				n.r.lh = 0
-				n.l.rh = 0
-				n.l.lh = 0
-				return
-			}
 			ncopy := newNode(n, n.key, n.val)
 			n.key = n.l.key
 			n.val = n.l.val
 			n.r = ncopy
 			n.l = n.l.l
-			n.parent = parent
+			if parent == nil {
+				n.parent = nil
+			} else {
+				n.parent = parent
+			}
 			ncopy.parent = n
+			n.l.parent = n
 			n.rh = 1
 			n.lh = 1
 			n.r.rh = 0
@@ -250,6 +226,7 @@ func checkBalanceRec(n *node, from direction) {
 				n.parent = parent
 			}
 			ncopy.parent = n
+			n.r.parent = n
 			n.rh = 1
 			n.lh = 1
 			n.r.rh = 0
@@ -279,8 +256,13 @@ func checkBalanceRec(n *node, from direction) {
 			n.val = n.l.val
 			n.r = ncopy
 			n.l = n.l.l
-			n.parent = nil
+			if parent == nil {
+				n.parent = nil
+			} else {
+				n.parent = parent
+			}
 			ncopy.parent = n
+			n.l.parent = n
 			n.rh = 1
 			n.lh = 1
 			n.r.rh = 0
