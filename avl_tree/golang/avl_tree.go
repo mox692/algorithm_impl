@@ -54,8 +54,132 @@ func getRec(n *node, key int) (*string, *node) {
 	return nil, n
 }
 
+func getRightChildRec(n *node) *node {
+	if nr := n.r; nr != nil {
+		return getRightChildRec(nr)
+	}
+	if p := n.parent; p != nil {
+		p.r = nil
+		// 親を再帰的に巡っていき、このnodeが消えることによるlh, rhを変更していく
+	}
+	return n
+}
+
 func (t avlTree) Delete(key int) {
-	// 見つける
+	if t.root == nil {
+		return
+	}
+	val, n := getRec(t.root, key)
+	if val == nil {
+		// keyに対応するデータがない
+		return
+	}
+	// 削除は4ぱたーnn
+	p := n.parent
+	if n.l == nil && n.r == nil {
+		if p == nil {
+			// nを消すのではなく、初期化する
+			n.key = nil
+			n.val = ""
+			n.l = nil
+			n.r = nil
+			n.rh = 0
+			n.lh = 0
+			return
+		}
+		if p.l != nil {
+			if p.l.key == n.key {
+				p.l = nil
+				checkBalanceRec(p, left, delete)
+				return
+			}
+		}
+		if p.r != nil {
+			if p.r.key == n.key {
+				p.r = nil
+				checkBalanceRec(p, right, delete)
+				return
+			}
+		}
+		panic("error happen")
+	} else if nr := n.r; n.l == nil && nr != nil {
+		if p == nil {
+			// nを消すのではなく、初期化する
+			n.key = nr.key
+			n.val = nr.val
+			n.l = nr.l
+			n.r = nr.r
+			n.rh--
+			return
+		}
+		if p.l != nil {
+			if p.l.key == n.key {
+				p.l = nil
+				checkBalanceRec(p, left, delete)
+				return
+			}
+		}
+		if p.r != nil {
+			if p.r.key == n.key {
+				p.r = nil
+				checkBalanceRec(p, right, delete)
+				return
+			}
+		}
+		panic("error happen")
+	} else if nl := n.l; nl != nil && n.r == nil {
+		if p == nil {
+			// nを消すのではなく、初期化する
+			n.key = nr.key
+			n.val = nr.val
+			n.l = nl.l
+			n.r = nl.r
+			n.lh--
+			return
+		}
+		if p.l != nil {
+			if p.l.key == n.key {
+				p.l = nil
+				checkBalanceRec(p, left, delete)
+				return
+			}
+		}
+		if p.r != nil {
+			if p.r.key == n.key {
+				p.r = nil
+				checkBalanceRec(p, right, delete)
+				return
+			}
+		}
+		panic("error happen")
+	} else if n.l != nil && n.r != nil {
+		// nのleftの一番大きいnodeを親に昇格させる
+		var getBiggestNode func(*node) *node
+		getBiggestNode = func(n *node) *node {
+			if n.r == nil {
+				return n
+			}
+			getBiggestNode(n.r)
+			return nil
+		}
+		biggest := getBiggestNode(n.l)
+		// 新しいbcに値を詰める
+		n.key = biggest.key
+		n.val = biggest.val
+		n.lh -= 1
+		// biggestを消しつつ、balancecheckして終了
+		if bp := biggest.parent; bp.l.key == biggest.key {
+			bp.l = nil
+			checkBalanceRec(bp, left, delete)
+			return
+		} else if bp.r.key == biggest.key {
+			bp.r = nil
+			checkBalanceRec(bp, left, delete)
+			return
+		} else {
+			panic("errrrrrrrrr")
+		}
+	}
 }
 
 func NewAvlTree() *avlTree {
@@ -145,15 +269,22 @@ const (
 	UnBalancedLinearLeft
 )
 
+type checkType int
+
+const (
+	set    checkType = 1
+	delete           = -1
+)
+
 // そのnodeがbalanceされているか.
 // されていなかったら、バランス処理を施してreturnする.
 // rootまで来たら(parentがなかったら)捜査は終了する
 // from -> left: 0, right:1
-func checkBalanceRec(n *node, from direction) {
+func checkBalanceRec(n *node, from direction, typ checkType) {
 	if from == left {
-		n.lh++
+		n.lh += int(typ)
 	} else if from == right {
-		n.rh++
+		n.rh += int(typ)
 	}
 	parent := n.parent
 	if b := isBalanced(n); b != balanced {
@@ -282,14 +413,14 @@ func checkBalanceRec(n *node, from direction) {
 	// そのnodeでbalanceしてるならparentをcheck
 	if parent.r != nil {
 		if parent.r.key == n.key {
-			checkBalanceRec(parent, right)
+			checkBalanceRec(parent, right, typ)
 			return
 		}
 		log.Fatal("errrrrrrrrr")
 	}
 	if parent.l != nil {
 		if parent.l.key == n.key {
-			checkBalanceRec(parent, left)
+			checkBalanceRec(parent, left, typ)
 			return
 		}
 		log.Fatal("errrrrrrrrr")
@@ -301,7 +432,7 @@ func setRec(n *node, key *int, val string) {
 	if *n.key < *key {
 		if n.r == nil {
 			n.r = newNode(n, key, val)
-			checkBalanceRec(n, right)
+			checkBalanceRec(n, right, set)
 			return
 		}
 		setRec(n.r, key, val)
@@ -310,7 +441,7 @@ func setRec(n *node, key *int, val string) {
 	if *n.key > *key {
 		if n.l == nil {
 			n.l = newNode(n, key, val)
-			checkBalanceRec(n, left)
+			checkBalanceRec(n, left, set)
 			return
 		}
 		setRec(n.l, key, val)
