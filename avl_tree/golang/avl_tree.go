@@ -3,6 +3,8 @@ package avl_tree
 import (
 	"fmt"
 	"log"
+
+	"github.com/mox692/algorithm_impl/avl_tree/golang/util"
 )
 
 type AVLTree interface {
@@ -90,14 +92,14 @@ func (t avlTree) Delete(key int) {
 		if p.l != nil {
 			if p.l.key == n.key {
 				p.l = nil
-				checkBalanceRec(p, left, delete)
+				checkBalanceRec(p, util.NewStack[direction]().Push(left), delete)
 				return
 			}
 		}
 		if p.r != nil {
 			if p.r.key == n.key {
 				p.r = nil
-				checkBalanceRec(p, right, delete)
+				checkBalanceRec(p, util.NewStack[direction]().Push(right), delete)
 				return
 			}
 		}
@@ -115,14 +117,14 @@ func (t avlTree) Delete(key int) {
 		if p.l != nil {
 			if p.l.key == n.key {
 				p.l = nil
-				checkBalanceRec(p, left, delete)
+				checkBalanceRec(p, util.NewStack[direction]().Push(left), delete)
 				return
 			}
 		}
 		if p.r != nil {
 			if p.r.key == n.key {
 				p.r = nil
-				checkBalanceRec(p, right, delete)
+				checkBalanceRec(p, util.NewStack[direction]().Push(right), delete)
 				return
 			}
 		}
@@ -140,14 +142,14 @@ func (t avlTree) Delete(key int) {
 		if p.l != nil {
 			if p.l.key == n.key {
 				p.l = nil
-				checkBalanceRec(p, left, delete)
+				checkBalanceRec(p, util.NewStack[direction]().Push(left), delete)
 				return
 			}
 		}
 		if p.r != nil {
 			if p.r.key == n.key {
 				p.r = nil
-				checkBalanceRec(p, right, delete)
+				checkBalanceRec(p, util.NewStack[direction]().Push(right), delete)
 				return
 			}
 		}
@@ -166,15 +168,15 @@ func (t avlTree) Delete(key int) {
 		// 新しいbcに値を詰める
 		n.key = biggest.key
 		n.val = biggest.val
-		n.lh -= 1
 		// biggestを消しつつ、balancecheckして終了
 		if bp := biggest.parent; bp.l.key == biggest.key {
 			bp.l = nil
-			checkBalanceRec(bp, left, delete)
+			fmt.Printf("bp: %+v\n", bp)
+			checkBalanceRec(bp, util.NewStack[direction]().Push(left), delete)
 			return
 		} else if bp.r.key == biggest.key {
 			bp.r = nil
-			checkBalanceRec(bp, left, delete)
+			checkBalanceRec(bp, util.NewStack[direction]().Push(left), delete)
 			return
 		} else {
 			panic("errrrrrrrrr")
@@ -210,6 +212,18 @@ func newNode(parent *node, key *int, val string) *node {
 	}
 }
 
+func newNodeCopy(n *node) *node {
+	return &node{
+		key:    n.key,
+		val:    n.val,
+		parent: n.parent,
+		r:      n.r,
+		l:      n.l,
+		lh:     n.lh,
+		rh:     n.rh,
+	}
+}
+
 func newNodeDefault() *node {
 	return &node{
 		key:    nil,
@@ -222,33 +236,40 @@ func newNodeDefault() *node {
 	}
 }
 
-func isBalanced(n *node) balanceType {
+func isBalanced(n *node, path *util.Stack[direction]) balanceType {
 	if diff := n.lh - n.rh; diff >= 0 {
 		// left heavy
 		if diff >= 2 {
-			lc := n.l
-			if lc.r == nil && lc.l != nil {
-				return UnBalancedLinearLeft
-			} else if lc.r != nil && lc.l == nil {
-				return UnBalancedCrookedLeft
-			} else {
-				log.Panicf("Invalid node, node: %+v\n", lc)
-			}
+			return dispatch(*path.GetNth(0), *path.GetNth(1))
 		}
 		return balanced
 	} else {
 		// right heavy
 		if diff <= -2 {
-			rc := n.r
-			if rc.l == nil && rc.r != nil {
-				return UnBalancedLinearRight
-			} else if rc.r == nil && rc.l != nil {
-				return UnBalancedCrookedRight
-			} else {
-				log.Panicf("Invalid node, node: %+v\n", rc)
-			}
+			return dispatch(*path.GetNth(0), *path.GetNth(1))
 		}
 		return balanced
+	}
+}
+
+func dispatch(first, second direction) balanceType {
+	if first == right && second == right {
+		return UnBalancedLinearRight
+	} else if first == right && second == left {
+		return UnBalancedCrookedRight
+	} else if first == left && second == left {
+		return UnBalancedLinearLeft
+	} else if first == left && second == right {
+		return UnBalancedCrookedLeft
+	}
+	panic("eerrrrrrrrrrr")
+}
+
+func max(a, b int) int {
+	if a >= b {
+		return a
+	} else {
+		return b
 	}
 }
 
@@ -280,16 +301,17 @@ const (
 // されていなかったら、バランス処理を施してreturnする.
 // rootまで来たら(parentがなかったら)捜査は終了する
 // from -> left: 0, right:1
-func checkBalanceRec(n *node, from direction, typ checkType) {
-	if from == left {
+func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
+	if *path.GetNth(0) == left {
 		n.lh += int(typ)
-	} else if from == right {
+	} else if *path.GetNth(0) == right {
 		n.rh += int(typ)
 	}
 	parent := n.parent
-	if b := isBalanced(n); b != balanced {
+	if b := isBalanced(n, path); b != balanced {
 		// バランス処理.
 		// バランス結果を反映するようにする.
+		fmt.Printf("come!! %+v\n", b)
 		switch b {
 		case UnBalancedLinearRight:
 			ncopy := newNode(n, n.key, n.val)
@@ -304,12 +326,15 @@ func checkBalanceRec(n *node, from direction, typ checkType) {
 			}
 			ncopy.parent = n
 			n.r.parent = n
-			n.rh = 1
-			n.lh = 1
-			n.r.rh = 0
-			n.r.lh = 0
-			n.l.rh = 0
-			n.l.lh = 0
+			var nrl *node = nil
+			if n.r.l != nil {
+				nrl = newNodeCopy(n)
+			}
+			n.l.r = nrl
+			// 高さ
+			n.lh++
+			n.rh--
+			n.l.rh = max(n.l.r.rh, n.l.r.lh)
 			return
 		case UnBalancedLinearLeft:
 			ncopy := newNode(n, n.key, n.val)
@@ -413,14 +438,14 @@ func checkBalanceRec(n *node, from direction, typ checkType) {
 	// そのnodeでbalanceしてるならparentをcheck
 	if parent.r != nil {
 		if parent.r.key == n.key {
-			checkBalanceRec(parent, right, typ)
+			checkBalanceRec(parent, path.Push(right), typ)
 			return
 		}
 		log.Fatal("errrrrrrrrr")
 	}
 	if parent.l != nil {
 		if parent.l.key == n.key {
-			checkBalanceRec(parent, left, typ)
+			checkBalanceRec(parent, path.Push(left), typ)
 			return
 		}
 		log.Fatal("errrrrrrrrr")
@@ -432,7 +457,12 @@ func setRec(n *node, key *int, val string) {
 	if *n.key < *key {
 		if n.r == nil {
 			n.r = newNode(n, key, val)
-			checkBalanceRec(n, right, set)
+			// FIX: 新しいnodeに兄弟がいたら、親のheightだけを更新してreturnする
+			if n.l != nil {
+				n.rh++
+				return
+			}
+			checkBalanceRec(n, util.NewStack[direction]().Push(right), set)
 			return
 		}
 		setRec(n.r, key, val)
@@ -441,7 +471,12 @@ func setRec(n *node, key *int, val string) {
 	if *n.key > *key {
 		if n.l == nil {
 			n.l = newNode(n, key, val)
-			checkBalanceRec(n, left, set)
+			// FIX: 新しいnodeに兄弟がいたら、親のheightだけを更新してreturnする
+			if n.r != nil {
+				n.lh++
+				return
+			}
+			checkBalanceRec(n, util.NewStack[direction]().Push(left), set)
 			return
 		}
 		setRec(n.l, key, val)
