@@ -374,34 +374,46 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 			//      2
 			nr := n.r
 			nrcopy := newNode(nr, nr.key, nr.val)
-			nrcopy.parent = nr
+			nrcopy.parent = nr.l
+			nrcopy.l = nil
 			nr.key = nr.l.key
 			nr.val = nr.l.val
 			nr.r = nrcopy
-			nr.l = nil
+			if nrlr := nr.l.r; nrlr != nil {
+				nr.r.l = nrlr
+			} else if nrll := nr.l.l; nrll != nil {
+				nr.l = nrll
+			} else {
+				panic("wrong!!!")
+			}
 			//　　  1
 			//       \
 			//        2
 			//         \
 			//          3
-			ncopy := newNode(n, n.key, n.val)
+			ncopy := newNodeCopy(n)
+			nrlcopy := newNodeCopy(n.r.l)
+
+			// nの切り替え
 			n.key = n.r.key
 			n.val = n.r.val
-			n.l = ncopy
 			n.r = n.r.r
-			if parent == nil {
-				n.parent = nil
-			} else {
-				n.parent = parent
-			}
+
+			// nl(元々n)の挿入
 			ncopy.parent = n
-			n.r.parent = n
-			n.rh = 1
-			n.lh = 1
-			n.r.rh = 0
-			n.r.lh = 0
-			n.l.rh = 0
-			n.l.lh = 0
+			ncopy.l = n.l
+			n.l = ncopy
+
+			// nrlをnlにつける
+			if nrlcopy != nil {
+				nrlcopy.parent = n.l
+			}
+			n.l.r = nrlcopy
+
+			// 高さ調整.新しいnと、nlが対象
+			n.lh++
+			n.rh--
+			n.l.rh = max(n.l.r.rh, n.l.r.lh) + 1
 		case UnBalancedCrookedLeft:
 			//　　  3
 			//    /

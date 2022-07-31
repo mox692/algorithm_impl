@@ -68,6 +68,17 @@ func Test_Basic4(t *testing.T) {
 	tr.Set(8, "four")
 	tr.Set(5, "one")
 	tr.Set(4, "one")
+}
+
+func Test_Basic5(t *testing.T) {
+	tr := NewAvlTree()
+	tr.Set(10, "one")
+	tr.Set(4, "two")
+	tr.Set(16, "three")
+	tr.Set(20, "four")
+	tr.Set(13, "one")
+	fmt.Println("aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
+	tr.Set(14, "one")
 	fmt.Println("aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
 }
 
