@@ -367,53 +367,124 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 			n.r.lh = max(n.r.l.rh, n.r.l.lh) + 1
 			return
 		case UnBalancedCrookedRight:
-			//　　  1
-			//       \
-			//        3
-			//       /
-			//      2
 			nr := n.r
-			nrcopy := newNode(nr, nr.key, nr.val)
-			nrcopy.parent = nr.l
-			nrcopy.l = nil
-			nr.key = nr.l.key
-			nr.val = nr.l.val
-			nr.r = nrcopy
 			if nrlr := nr.l.r; nrlr != nil {
+				//　　  10
+				//       \
+				//        16
+				//       /  \
+				//      13   20
+				//       \
+				//        14
+				//
+				//      |
+				//      V
+				//
+				//　　  10
+				//       \
+				//        13
+				//          \
+				//           16
+				//          /  \
+				//        14    20
+				nrcopy := newNodeCopy(nr)
+				nrcopy.parent = nr.l
+				nrcopy.l = nil
+				nr.key = nr.l.key
+				nr.val = nr.l.val
+				if nr.r != nil {
+					nr.r.parent = nrcopy
+				}
+				nr.r = nrcopy
 				nr.r.l = nrlr
-			} else if nrll := nr.l.l; nrll != nil {
-				nr.l = nrll
+				nr.l = nil
+				// height合わせ
+				// ·nrr
+				nrr := nr.r
+				if nrrr := nrr.r; nrrr != nil {
+					nrr.rh = max(nrrr.rh, nrrr.lh) + 1
+				}
+				if nrrl := nrr.l; nrrl != nil {
+					nr.r.lh = max(nrrl.lh, nrrl.rh) + 1
+				}
+				// ·nr
+				if nr.l != nil {
+					nr.lh = max(nr.l.lh, nr.l.rh) + 1
+				} else {
+					nr.lh = 0
+				}
+				nr.rh = max(nrr.rh, nrr.lh) + 1
+				// step 2
+				ncopy := newNodeCopy(n)
+				ncopy.parent = n
+				ncopy.r = nil
+				n.val = nr.val
+				n.key = nr.key
+				n.l = ncopy
+				n.r = nr.r
+				// 高さ
+				// nl
+				n.l.lh = max(n.l.l.rh, n.l.l.lh) + 1
+				n.l.rh = 0
+				// n
+				n.rh = max(n.r.rh, n.r.lh) + 1
+				n.lh = max(n.l.rh, n.l.lh) + 1
+			} else if nr.l.l != nil {
+				nrcopy := newNodeCopy(nr)
+				nrcopy.parent = nr.l
+				nrcopy.lh = 0
+				nrcopy.rh = 0
+				nr.key = nr.l.key
+				nr.val = nr.l.val
+				if nr.r != nil {
+					nr.r.parent = nrcopy
+				}
+				nr.r = nrcopy
+				nr.l = nrcopy.l.l
+				// height合わせ
+				// ·nrr
+				nrcopy.l = nil
+				nrr := nr.r
+				if nrr.r != nil {
+					nr.r.rh = max(nr.r.r.rh, nr.r.r.lh) + 1
+				}
+				if nrr.l != nil {
+					nr.r.lh = max(nr.r.l.lh, nr.r.l.rh) + 1
+				}
+				// ·nr
+				if nr.l != nil {
+					nr.lh = max(nr.l.lh, nr.l.rh) + 1
+				} else {
+					nr.lh = 0
+				}
+				if nr.r != nil {
+					nr.rh = max(nr.r.rh, nr.r.lh) + 1
+				}
+				ncopy := newNodeCopy(n)
+				nrlcopy := newNodeCopy(n.r.l)
+				// nの切り替え
+				n.key = n.r.key
+				n.val = n.r.val
+				n.r = n.r.r
+
+				// nl(元々n)の挿入
+				ncopy.parent = n
+				ncopy.l = n.l
+				n.l = ncopy
+
+				// nrlをnlにつける
+				if nrlcopy != nil {
+					nrlcopy.parent = n.l
+				}
+				n.l.r = nrlcopy
+
+				// 高さ調整.新しいnと、nlが対象
+				n.lh++
+				n.rh--
+				n.l.rh = max(n.l.r.rh, n.l.r.lh) + 1
 			} else {
-				panic("wrong!!!")
+				panic("eeeeerrrrr")
 			}
-			//　　  1
-			//       \
-			//        2
-			//         \
-			//          3
-			ncopy := newNodeCopy(n)
-			nrlcopy := newNodeCopy(n.r.l)
-
-			// nの切り替え
-			n.key = n.r.key
-			n.val = n.r.val
-			n.r = n.r.r
-
-			// nl(元々n)の挿入
-			ncopy.parent = n
-			ncopy.l = n.l
-			n.l = ncopy
-
-			// nrlをnlにつける
-			if nrlcopy != nil {
-				nrlcopy.parent = n.l
-			}
-			n.l.r = nrlcopy
-
-			// 高さ調整.新しいnと、nlが対象
-			n.lh++
-			n.rh--
-			n.l.rh = max(n.l.r.rh, n.l.r.lh) + 1
 		case UnBalancedCrookedLeft:
 			//　　  3
 			//    /

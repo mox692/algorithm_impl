@@ -77,9 +77,20 @@ func Test_Basic5(t *testing.T) {
 	tr.Set(16, "three")
 	tr.Set(20, "four")
 	tr.Set(13, "one")
-	fmt.Println("aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
 	tr.Set(14, "one")
-	fmt.Println("aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
+	fmt.Println("1aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
+}
+
+func Test_Basic6(t *testing.T) {
+	tr := NewAvlTree()
+	tr.Set(10, "one")
+	tr.Set(4, "two")
+	tr.Set(16, "three")
+	tr.Set(20, "four")
+	tr.Set(13, "one")
+	// fmt.Println("aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
+	tr.Set(12, "one")
+	fmt.Println("2aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
 }
 
 func Test_flatten(t *testing.T) {
