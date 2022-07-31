@@ -213,6 +213,9 @@ func newNode(parent *node, key *int, val string) *node {
 }
 
 func newNodeCopy(n *node) *node {
+	if n == nil {
+		return nil
+	}
 	return &node{
 		key:    n.key,
 		val:    n.val,
@@ -314,47 +317,54 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 		fmt.Printf("come!! %+v\n", b)
 		switch b {
 		case UnBalancedLinearRight:
-			ncopy := newNode(n, n.key, n.val)
+			ncopy := newNodeCopy(n)
+			nrlcopy := newNodeCopy(n.r.l)
+
+			// nの切り替え
 			n.key = n.r.key
 			n.val = n.r.val
-			n.l = ncopy
 			n.r = n.r.r
-			if parent == nil {
-				n.parent = nil
-			} else {
-				n.parent = parent
-			}
+
+			// nl(元々n)の挿入
 			ncopy.parent = n
-			n.r.parent = n
-			var nrl *node = nil
-			if n.r.l != nil {
-				nrl = newNodeCopy(n)
+			ncopy.l = n.l
+			n.l = ncopy
+
+			// nrlをnlにつける
+			if nrlcopy != nil {
+				nrlcopy.parent = n.l
 			}
-			n.l.r = nrl
-			// 高さ
+			n.l.r = nrlcopy
+
+			// 高さ調整.新しいnと、nlが対象
 			n.lh++
 			n.rh--
-			n.l.rh = max(n.l.r.rh, n.l.r.lh)
+			n.l.rh = max(n.l.r.rh, n.l.r.lh) + 1
 			return
 		case UnBalancedLinearLeft:
-			ncopy := newNode(n, n.key, n.val)
+			ncopy := newNodeCopy(n)
+			nlrcopy := newNodeCopy(n.l.r)
+
+			// nの切り替え
 			n.key = n.l.key
 			n.val = n.l.val
-			n.r = ncopy
 			n.l = n.l.l
-			if parent == nil {
-				n.parent = nil
-			} else {
-				n.parent = parent
-			}
+
+			// nl(元々n)の挿入
 			ncopy.parent = n
-			n.l.parent = n
-			n.rh = 1
-			n.lh = 1
-			n.r.rh = 0
-			n.r.lh = 0
-			n.l.rh = 0
-			n.l.lh = 0
+			ncopy.r = n.r
+			n.r = ncopy
+
+			// nrlをnlにつける
+			if nlrcopy != nil {
+				nlrcopy.parent = n.r
+			}
+			n.r.l = nlrcopy
+
+			// 高さ調整.新しいnと、nlが対象
+			n.rh++
+			n.lh--
+			n.r.lh = max(n.r.l.rh, n.r.l.lh) + 1
 			return
 		case UnBalancedCrookedRight:
 			//　　  1
@@ -437,20 +447,17 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 	}
 	// そのnodeでbalanceしてるならparentをcheck
 	if parent.r != nil {
-		if parent.r.key == n.key {
+		if *parent.r.key == *n.key {
 			checkBalanceRec(parent, path.Push(right), typ)
 			return
 		}
-		log.Fatal("errrrrrrrrr")
 	}
 	if parent.l != nil {
-		if parent.l.key == n.key {
+		if *parent.l.key == *n.key {
 			checkBalanceRec(parent, path.Push(left), typ)
 			return
 		}
-		log.Fatal("errrrrrrrrr")
 	}
-	return
 }
 
 func setRec(n *node, key *int, val string) {

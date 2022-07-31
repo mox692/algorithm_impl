@@ -60,5 +60,16 @@ func Test_Basic3(t *testing.T) {
 	// tr.Delete(2)
 }
 
+func Test_Basic4(t *testing.T) {
+	tr := NewAvlTree()
+	tr.Set(10, "one")
+	tr.Set(15, "two")
+	tr.Set(6, "three")
+	tr.Set(8, "four")
+	tr.Set(5, "one")
+	tr.Set(4, "one")
+	fmt.Println("aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
+}
+
 func Test_flatten(t *testing.T) {
 }
