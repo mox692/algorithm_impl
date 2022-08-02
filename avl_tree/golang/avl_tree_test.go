@@ -93,5 +93,56 @@ func Test_Basic6(t *testing.T) {
 	fmt.Println("2aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
 }
 
+func Test_Basic7(t *testing.T) {
+	tr := NewAvlTree()
+	tr.Set(10, "one")
+	tr.Set(4, "two")
+	tr.Set(12, "three")
+	tr.Set(2, "four")
+	tr.Set(6, "one")
+	// fmt.Println("aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
+	tr.Set(5, "one")
+	fmt.Println("2aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
+}
+
+func Test_Basic8(t *testing.T) {
+	tr := NewAvlTree()
+	tr.Set(10, "one")
+	tr.Set(4, "two")
+	tr.Set(12, "three")
+	tr.Set(2, "four")
+	tr.Set(6, "one")
+	// fmt.Println("aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
+	tr.Set(8, "one")
+	fmt.Println("2aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
+}
+
+func Test_Basic9(t *testing.T) {
+	tr := NewAvlTree()
+	tr.Set(10, "one")
+	tr.Set(4, "two")
+	tr.Set(12, "three")
+	tr.Set(2, "four")
+	tr.Set(6, "one")
+	// fmt.Println("aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
+	tr.Set(8, "one")
+	fmt.Println("2aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
+}
+
+func Test_Basic10(t *testing.T) {
+	tr := NewAvlTree()
+	tr.Set(1, "one")
+	fmt.Println("1 done")
+	tr.Set(2, "two")
+	fmt.Println("2 done")
+	tr.Set(3, "three")
+	fmt.Println("3 done")
+	fmt.Println("aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
+	tr.Set(4, "four")
+	fmt.Println("4 done")
+	tr.Set(5, "one")
+	fmt.Println("aaaaaaaaaaaaa", flatten(tr.root), "aaaaaaaaaaaaa")
+}
+
 func Test_flatten(t *testing.T) {
 }

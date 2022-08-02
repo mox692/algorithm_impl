@@ -325,6 +325,9 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 			n.val = n.r.val
 			n.r = n.r.r
 
+			// 元々のnrrの親をnに
+			n.r.parent = n
+
 			// nl(元々n)の挿入
 			ncopy.parent = n
 			ncopy.l = n.l
@@ -339,7 +342,9 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 			// 高さ調整.新しいnと、nlが対象
 			n.lh++
 			n.rh--
-			n.l.rh = max(n.l.r.rh, n.l.r.lh) + 1
+			// TODO: いらない？
+			// n.l.rh = max(n.l.r.rh, n.l.r.lh) + 1
+			n.l.rh = 0
 			return
 		case UnBalancedLinearLeft:
 			ncopy := newNodeCopy(n)
@@ -349,6 +354,9 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 			n.key = n.l.key
 			n.val = n.l.val
 			n.l = n.l.l
+
+			// 元々のnrrの親をnに
+			n.l.parent = n
 
 			// nl(元々n)の挿入
 			ncopy.parent = n
@@ -364,7 +372,9 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 			// 高さ調整.新しいnと、nlが対象
 			n.rh++
 			n.lh--
-			n.r.lh = max(n.r.l.rh, n.r.l.lh) + 1
+			// TODO: いらない？
+			// n.r.lh = max(n.r.l.rh, n.r.l.lh) + 1
+			n.r.lh = 0
 			return
 		case UnBalancedCrookedRight:
 			nr := n.r
@@ -392,9 +402,6 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				nrcopy.l = nil
 				nr.key = nr.l.key
 				nr.val = nr.l.val
-				if nr.r != nil {
-					nr.r.parent = nrcopy
-				}
 				nr.r = nrcopy
 				nr.r.l = nrlr
 				nr.l = nil
@@ -486,56 +493,163 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				panic("eeeeerrrrr")
 			}
 		case UnBalancedCrookedLeft:
-			//　　  3
-			//    /
-			//   1
-			//    \
-			//     2
 			nl := n.l
-			nlcopy := newNode(nl, nl.key, nl.val)
-			nlcopy.parent = nl
-			nl.key = nl.r.key
-			nl.val = nl.r.val
-			nl.l = nlcopy
-			nl.r = nil
-			//　　  3
-			//    /
-			//   2
-			//  /
-			// 1
-			ncopy := newNode(n, n.key, n.val)
-			n.key = n.l.key
-			n.val = n.l.val
-			n.r = ncopy
-			n.l = n.l.l
-			if parent == nil {
-				n.parent = nil
+			if nlrl := nl.r.l; nlrl != nil {
+				//        10
+				//       /  \
+				//      4    12
+				//     / \
+				//    2   6
+				//       /
+				//      5
+				//
+				//        10
+				//       /  \
+				//      6    12
+				//     /
+				//    4
+				//   / \
+				//  2   5
+				//
+				//        6
+				//       /  \
+				//      4    10
+				//     / \     \
+				//    2   5     12
+				nlcopy := newNodeCopy(nl)
+				nlcopy.parent = nl.r
+				nlcopy.r = nil
+				nl.key = nl.r.key
+				nl.val = nl.r.val
+				nl.l = nlcopy
+				nl.l.r = nlrl
+				nl.r = nil
+				// height合わせ
+				// ·nll
+				nll := nl.l
+				if nlll := nll.l; nlll != nil {
+					nll.lh = max(nlll.rh, nlll.lh) + 1
+				}
+				if nllr := nll.r; nllr != nil {
+					nll.rh = max(nllr.lh, nllr.rh) + 1
+				}
+				// ·nl
+				if nl.r != nil {
+					nl.rh = max(nl.r.lh, nl.r.rh) + 1
+				} else {
+					nl.lh = 0
+				}
+				nl.rh = max(nll.rh, nll.lh) + 1
+				// step 2
+				ncopy := newNodeCopy(n)
+				ncopy.parent = n
+				ncopy.l = nil
+				n.val = nl.val
+				n.key = nl.key
+				n.r = ncopy
+				n.l = nl.l
+				// 高さ
+				// nl
+				n.r.rh = max(n.r.r.rh, n.r.r.lh) + 1
+				n.r.lh = 0
+				// n
+				n.rh = max(n.r.rh, n.r.lh) + 1
+				n.lh = max(n.l.rh, n.l.lh) + 1
+			} else if nl.r.r != nil {
+				//        10
+				//       /  \
+				//      4    12
+				//     / \
+				//    2   6
+				//         \
+				//          8
+				//
+				//        10
+				//       /  \
+				//      6    12
+				//     / \
+				//    4   8
+				//   /
+				//  2
+				//
+				//        6
+				//       /  \
+				//      4    10
+				//     /     / \
+				//    2     8   12
+				nlcopy := newNodeCopy(nl)
+				nlcopy.parent = nl.r
+				nlcopy.lh = 0
+				nlcopy.rh = 0
+				nl.key = nl.r.key
+				nl.val = nl.r.val
+				if nl.l != nil {
+					nl.l.parent = nlcopy
+				}
+				nl.l = nlcopy
+				nl.r = nlcopy.r.r
+				// height合わせ
+				// ·nll
+				nlcopy.r = nil
+				nll := nl.l
+				if nll.l != nil {
+					nl.l.lh = max(nl.l.l.rh, nl.l.l.lh) + 1
+				}
+				if nll.r != nil {
+					nl.l.rh = max(nl.l.r.lh, nl.l.r.rh) + 1
+				}
+				// ·nl
+				if nl.r != nil {
+					nl.rh = max(nl.r.lh, nl.r.rh) + 1
+				} else {
+					nl.rh = 0
+				}
+				if nl.l != nil {
+					nl.lh = max(nl.l.rh, nl.l.rh) + 1
+				}
+				ncopy := newNodeCopy(n)
+				nlrcopy := newNodeCopy(n.l.r)
+				// nの切り替え
+				n.key = n.l.key
+				n.val = n.l.val
+				n.l = n.l.l
+
+				// nl(元々n)の挿入
+				ncopy.parent = n
+				ncopy.r = n.r
+				n.r = ncopy
+
+				// nlrをnrにつける
+				if nlrcopy != nil {
+					nlrcopy.parent = n.r
+				}
+				n.r.l = nlrcopy
+
+				// 高さ調整.新しいnと、nlが対象
+				n.rh++
+				n.lh--
+				n.r.lh = max(n.r.l.rh, n.r.l.lh) + 1
 			} else {
-				n.parent = parent
+				panic("eeeeerrrrr")
 			}
-			ncopy.parent = n
-			n.l.parent = n
-			n.rh = 1
-			n.lh = 1
-			n.r.rh = 0
-			n.r.lh = 0
-			n.l.rh = 0
-			n.l.lh = 0
 		default:
 			panic("not implement")
 		}
 	}
 	if parent == nil {
+		fmt.Printf("node: %+v\n", flatten(n))
 		return
 	}
 	// そのnodeでbalanceしてるならparentをcheck
 	if parent.r != nil {
+		fmt.Printf("node2: %+v\nparent: %+v\n", flatten(n), flatten(parent))
 		if *parent.r.key == *n.key {
 			checkBalanceRec(parent, path.Push(right), typ)
 			return
 		}
 	}
 	if parent.l != nil {
+		fmt.Printf("node3: %+v\nparent: %+v\n", flatten(n), flatten(parent))
 		if *parent.l.key == *n.key {
 			checkBalanceRec(parent, path.Push(left), typ)
 			return
