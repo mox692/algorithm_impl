@@ -314,7 +314,6 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 	if b := isBalanced(n, path); b != balanced {
 		// バランス処理.
 		// バランス結果を反映するようにする.
-		fmt.Printf("come!! %+v\n", b)
 		switch b {
 		case UnBalancedLinearRight:
 			ncopy := newNodeCopy(n)
@@ -637,19 +636,16 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 		}
 	}
 	if parent == nil {
-		fmt.Printf("node: %+v\n", flatten(n))
 		return
 	}
 	// そのnodeでbalanceしてるならparentをcheck
 	if parent.r != nil {
-		fmt.Printf("node2: %+v\nparent: %+v\n", flatten(n), flatten(parent))
 		if *parent.r.key == *n.key {
 			checkBalanceRec(parent, path.Push(right), typ)
 			return
 		}
 	}
 	if parent.l != nil {
-		fmt.Printf("node3: %+v\nparent: %+v\n", flatten(n), flatten(parent))
 		if *parent.l.key == *n.key {
 			checkBalanceRec(parent, path.Push(left), typ)
 			return
@@ -721,4 +717,41 @@ func flatten(n *node) string {
 		}
 	}
 	return fmt.Sprintf("([%d:%s, lh: %d, rh: %d], (%s, %s))", *n.key, n.val, n.lh, n.rh, l, r)
+}
+
+// tree checker
+//
+func checkTree(t *avlTree) bool {
+	r := t.root
+	if r == nil {
+		return false
+	}
+	see := make(map[int]struct{})
+	var checkRec func(n *node, see map[int]struct{}) bool
+	checkRec = func(n *node, see map[int]struct{}) bool {
+		_, ok := see[*n.key]
+		// 左下あるか
+		if !ok && n.l != nil {
+			return checkRec(n.l, see)
+		}
+		// 自分自身がマーク済みか
+		if !ok {
+			fmt.Printf("val: %d\n", *n.key)
+			see[*n.key] = struct{}{}
+			ok = true
+		}
+		// 右下あるか
+		if ok && n.r != nil {
+			if _, ok2 := see[*n.r.key]; !ok2 {
+				return checkRec(n.r, see)
+			}
+		}
+		// parentあるか
+		if ok && n.parent != nil {
+			return checkRec(n.parent, see)
+		}
+		// それ以外だったら正常終了
+		return true
+	}
+	return checkRec(r, see)
 }
