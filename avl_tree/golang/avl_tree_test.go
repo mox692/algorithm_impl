@@ -160,12 +160,20 @@ import (
 // }
 
 func Test_random(t *testing.T) {
-	rand.Seed(time.Now().Unix())
-	s := rand.Perm(5)
+	rand.Seed(time.Now().UnixNano())
+	// s := rand.Perm(5)
+	// 1 0 4 2 3
+	s := []int{1, 2, 0, 4, 3}
 	fmt.Println("aaaaaaaaaaaaa", s, "aaaaaaaaaaaaa")
 	tr := NewAvlTree()
 	for _, v := range s {
 		tr.Set(v, fmt.Sprintf("%d", v))
+	}
+	for _, v := range s {
+		got := *tr.Get(v)
+		if expect := fmt.Sprintf("%d", v); got != expect {
+			t.Errorf("expect %s, but got %s\ns:%+v", expect, got, s)
+		}
 	}
 	fmt.Println(flatten(tr.root))
 	checkTree(tr)

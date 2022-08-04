@@ -303,7 +303,7 @@ const (
 // そのnodeがbalanceされているか.
 // されていなかったら、バランス処理を施してreturnする.
 // rootまで来たら(parentがなかったら)捜査は終了する
-// from -> left: 0, right:1
+// from -> leftからあがってきた: 0, rightからあがってきた:1
 func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 	if *path.GetNth(0) == left {
 		n.lh += int(typ)
@@ -388,6 +388,16 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				//
 				//      |
 				//      V
+				//
+				//　　  10
+				//       \
+				//        13
+				//          \
+				//           16
+				//          /  \
+				//        14    20
+				//
+				//
 				//
 				//　　  10
 				//       \
@@ -488,7 +498,7 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				n.lh++
 				n.rh--
 				n.l.rh = max(n.l.r.rh, n.l.r.lh) + 1
-			} else if nrlr != nil && nr.l.l == nil {
+			} else if nrlr == nil && nr.l.l == nil {
 				//　　  1
 				//       \
 				//        3
@@ -506,7 +516,7 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				//        2
 				//         \
 				//          3
-				ncopy := newNode(n, n.key, n.val)
+				ncopy := newNode(n.parent, n.key, n.val)
 				n.key = n.r.key
 				n.val = n.r.val
 				n.l = ncopy
@@ -527,6 +537,7 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 			} else {
 				panic("eeeeerrrrr")
 			}
+			return
 		case UnBalancedCrookedLeft:
 			nl := n.l
 			if nlrl := nl.r.l; nlrl != nil {
@@ -665,6 +676,7 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				n.lh--
 				n.r.lh = max(n.r.l.rh, n.r.l.lh) + 1
 			} else if nlrl == nil && nl.r.r == nil {
+				//    \
 				//　　  3
 				//    /
 				//   1
@@ -677,12 +689,21 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				nl.val = nl.r.val
 				nl.l = nlcopy
 				nl.r = nil
+				//    \
 				//　　  3
 				//    /
 				//   2
 				//  /
 				// 1
-				ncopy := newNode(n, n.key, n.val)
+				//
+				//    \
+				//　　  2
+				//    /  \
+				//   1    3
+				//
+				ncopy := newNode(n.parent, n.key, n.val)
+				ncopy.l = nil
+				ncopy.r = nil
 				n.key = n.l.key
 				n.val = n.l.val
 				n.r = ncopy
@@ -703,6 +724,7 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 			} else {
 				panic("eeeeerrrrr")
 			}
+			return
 		default:
 			panic("not implement")
 		}
@@ -829,12 +851,14 @@ func checkTree(t *avlTree) bool {
 			dep := path.Len()
 			if dep > maxDepth {
 				// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
-				if dep-maxDepth >= 2 {
+				if dep-maxDepth >= 2 && maxDepth != 0 {
+					fmt.Println("Tree: \n", flatten(t.root))
 					panic("errrrrrrrrr")
 				}
 				maxDepth = dep
-			} else if maxDepth-dep >= 2 {
+			} else if maxDepth-dep >= 2 && maxDepth != 0 {
 				// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
+				fmt.Println("Tree: \n", flatten(t.root))
 				panic("errrrrrrrrr")
 			}
 			_, path = path.Pop()
