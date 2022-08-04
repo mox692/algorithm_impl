@@ -1,7 +1,10 @@
 package avl_tree
 
 import (
+	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 )
 
 // func Test_Bisic(t *testing.T) {
@@ -146,12 +149,24 @@ import (
 // func Test_flatten(t *testing.T) {
 // }
 
-func Test_checkTree(t *testing.T) {
+// func Test_checkTree(t *testing.T) {
+// 	tr := NewAvlTree()
+// 	tr.Set(1, "one")
+// 	tr.Set(2, "two")
+// 	tr.Set(3, "three")
+// 	tr.Set(4, "four")
+// 	tr.Set(5, "one")
+// 	checkTree(tr)
+// }
+
+func Test_random(t *testing.T) {
+	rand.Seed(time.Now().Unix())
+	s := rand.Perm(5)
+	fmt.Println("aaaaaaaaaaaaa", s, "aaaaaaaaaaaaa")
 	tr := NewAvlTree()
-	tr.Set(1, "one")
-	tr.Set(2, "two")
-	tr.Set(3, "three")
-	// tr.Set(4, "four")
-	// tr.Set(5, "one")
+	for _, v := range s {
+		tr.Set(v, fmt.Sprintf("%d", v))
+	}
+	fmt.Println(flatten(tr.root))
 	checkTree(tr)
 }

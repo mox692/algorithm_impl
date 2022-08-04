@@ -488,6 +488,42 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				n.lh++
 				n.rh--
 				n.l.rh = max(n.l.r.rh, n.l.r.lh) + 1
+			} else if nrlr != nil && nr.l.l == nil {
+				//　　  1
+				//       \
+				//        3
+				//       /
+				//      2
+				nr := n.r
+				nrcopy := newNode(nr, nr.key, nr.val)
+				nrcopy.parent = nr
+				nr.key = nr.l.key
+				nr.val = nr.l.val
+				nr.r = nrcopy
+				nr.l = nil
+				//　　  1
+				//       \
+				//        2
+				//         \
+				//          3
+				ncopy := newNode(n, n.key, n.val)
+				n.key = n.r.key
+				n.val = n.r.val
+				n.l = ncopy
+				n.r = n.r.r
+				if parent == nil {
+					n.parent = nil
+				} else {
+					n.parent = parent
+				}
+				ncopy.parent = n
+				n.r.parent = n
+				n.rh = 1
+				n.lh = 1
+				n.r.rh = 0
+				n.r.lh = 0
+				n.l.rh = 0
+				n.l.lh = 0
 			} else {
 				panic("eeeeerrrrr")
 			}
@@ -628,6 +664,42 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				n.rh++
 				n.lh--
 				n.r.lh = max(n.r.l.rh, n.r.l.lh) + 1
+			} else if nlrl == nil && nl.r.r == nil {
+				//　　  3
+				//    /
+				//   1
+				//    \
+				//     2
+				nl := n.l
+				nlcopy := newNode(nl, nl.key, nl.val)
+				nlcopy.parent = nl
+				nl.key = nl.r.key
+				nl.val = nl.r.val
+				nl.l = nlcopy
+				nl.r = nil
+				//　　  3
+				//    /
+				//   2
+				//  /
+				// 1
+				ncopy := newNode(n, n.key, n.val)
+				n.key = n.l.key
+				n.val = n.l.val
+				n.r = ncopy
+				n.l = n.l.l
+				if parent == nil {
+					n.parent = nil
+				} else {
+					n.parent = parent
+				}
+				ncopy.parent = n
+				n.l.parent = n
+				n.rh = 1
+				n.lh = 1
+				n.r.rh = 0
+				n.r.lh = 0
+				n.l.rh = 0
+				n.l.lh = 0
 			} else {
 				panic("eeeeerrrrr")
 			}
@@ -727,31 +799,49 @@ func checkTree(t *avlTree) bool {
 		return false
 	}
 	see := make(map[int]struct{})
-	var checkRec func(n *node, see map[int]struct{}) bool
-	checkRec = func(n *node, see map[int]struct{}) bool {
+	maxDepth := 0
+
+	// MEMO: pathは下がった方向を基準に
+	var checkRec func(n *node, see map[int]struct{}, path *util.Stack[direction]) bool
+	checkRec = func(n *node, see map[int]struct{}, path *util.Stack[direction]) bool {
 		_, ok := see[*n.key]
 		// 左下あるか
 		if !ok && n.l != nil {
-			return checkRec(n.l, see)
+			if _, ok2 := see[*n.l.key]; !ok2 {
+				return checkRec(n.l, see, path.Push(left))
+			}
 		}
 		// 自分自身がマーク済みか
 		if !ok {
 			fmt.Printf("val: %d\n", *n.key)
 			see[*n.key] = struct{}{}
 			ok = true
+			// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
 		}
 		// 右下あるか
 		if ok && n.r != nil {
 			if _, ok2 := see[*n.r.key]; !ok2 {
-				return checkRec(n.r, see)
+				return checkRec(n.r, see, path.Push(right))
 			}
 		}
 		// parentあるか
 		if ok && n.parent != nil {
-			return checkRec(n.parent, see)
+			dep := path.Len()
+			if dep > maxDepth {
+				// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
+				if dep-maxDepth >= 2 {
+					panic("errrrrrrrrr")
+				}
+				maxDepth = dep
+			} else if maxDepth-dep >= 2 {
+				// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
+				panic("errrrrrrrrr")
+			}
+			_, path = path.Pop()
+			return checkRec(n.parent, see, path)
 		}
 		// それ以外だったら正常終了
 		return true
 	}
-	return checkRec(r, see)
+	return checkRec(r, see, util.NewStack[direction]())
 }
