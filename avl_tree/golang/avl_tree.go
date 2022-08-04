@@ -171,7 +171,6 @@ func (t avlTree) Delete(key int) {
 		// biggestを消しつつ、balancecheckして終了
 		if bp := biggest.parent; bp.l.key == biggest.key {
 			bp.l = nil
-			fmt.Printf("bp: %+v\n", bp)
 			checkBalanceRec(bp, util.NewStack[direction]().Push(left), delete)
 			return
 		} else if bp.r.key == biggest.key {
@@ -835,7 +834,7 @@ func checkTree(t *avlTree) bool {
 		}
 		// 自分自身がマーク済みか
 		if !ok {
-			fmt.Printf("val: %d\n", *n.key)
+			fmt.Printf("num: %d\n", *n.key)
 			see[*n.key] = struct{}{}
 			ok = true
 			// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
@@ -858,7 +857,7 @@ func checkTree(t *avlTree) bool {
 				maxDepth = dep
 			} else if maxDepth-dep >= 2 && maxDepth != 0 {
 				// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
-				fmt.Println("Tree: \n", flatten(t.root))
+				fmt.Printf("maxDepth: %d, dep: %d, Tree: \n%+v\nn: %+v\n", maxDepth, dep, flatten(t.root), n)
 				panic("errrrrrrrrr")
 			}
 			_, path = path.Pop()

@@ -162,8 +162,8 @@ import (
 func Test_random(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	// s := rand.Perm(5)
-	// 1 0 4 2 3
-	s := []int{1, 2, 0, 4, 3}
+	// s := []int{1, 2, 0, 4, 3}
+	s := []int{4, 2, 5, 0, 1, 3}
 	fmt.Println("aaaaaaaaaaaaa", s, "aaaaaaaaaaaaa")
 	tr := NewAvlTree()
 	for _, v := range s {
@@ -178,3 +178,32 @@ func Test_random(t *testing.T) {
 	fmt.Println(flatten(tr.root))
 	checkTree(tr)
 }
+
+// func Test_randomNth(t *testing.T) {
+// 	items := 6
+// 	times := 1
+// 	ss := make([][]int, times)
+// 	rand.Seed(time.Now().UnixNano())
+// 	s := rand.Perm(items * times)
+// 	fmt.Printf("---------------------------------\nitems: %d, times: %d\n---------------------------------\n", items, times)
+// 	for i := 0; i < times; i++ {
+// 		rand.Seed(time.Now().UnixNano())
+// 		ss[i] = s[i*items : i*items+items]
+// 	}
+
+// 	for i := 0; i < times; i++ {
+// 		fmt.Printf("ss[%d]: %+v\n", i, ss[i])
+// 		tr := NewAvlTree()
+// 		for _, v := range ss[i] {
+// 			tr.Set(v, fmt.Sprintf("%d", v))
+// 		}
+// 		for _, v := range ss[i] {
+// 			got := *tr.Get(v)
+// 			if expect := fmt.Sprintf("%d", v); got != expect {
+// 				t.Errorf("expect %s, but got %s\ns:%+v", expect, got, ss[i])
+// 			}
+// 		}
+// 		checkTree(tr)
+// 		fmt.Println(flatten(tr.root))
+// 	}
+// }
