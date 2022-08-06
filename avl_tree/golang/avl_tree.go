@@ -438,6 +438,7 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				n.val = nr.val
 				n.key = nr.key
 				n.l = ncopy
+				n.l.l.parent = ncopy
 				n.r = nr.r
 				nr.r.parent = n
 				// 高さ
@@ -598,6 +599,7 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				n.val = nl.val
 				n.key = nl.key
 				n.r = ncopy
+				n.r.r.parent = ncopy
 				n.l = nl.l
 				nl.l.parent = n
 				// 高さ
@@ -862,7 +864,8 @@ func checkTree(t *avlTree) bool {
 					// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
 					if dep-maxDepth >= 2 && maxDepth != 0 {
 						fmt.Println("******* find invalid  node **********")
-						fmt.Println("Tree: \n", flatten(t.root))
+						fmt.Printf("maxDepth: %d, dep: %d, Tree: \n%+v\nn: %+v\n", maxDepth, dep, flatten(t.root), n)
+						fmt.Printf("n.parent: %+v\nn.r: %+v\n", n.parent, n.r)
 						panic("")
 					}
 					maxDepth = dep
