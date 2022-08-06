@@ -855,21 +855,24 @@ func checkTree(t *avlTree) bool {
 		}
 		// parentあるか
 		if ok && n.parent != nil {
-			dep := path.Len()
-			if dep > maxDepth {
-				// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
-				if dep-maxDepth >= 2 && maxDepth != 0 {
+			// 末端だったら、depを更新
+			if n.l == nil && n.r == nil {
+				dep := path.Len()
+				if dep > maxDepth {
+					// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
+					if dep-maxDepth >= 2 && maxDepth != 0 {
+						fmt.Println("******* find invalid  node **********")
+						fmt.Println("Tree: \n", flatten(t.root))
+						panic("")
+					}
+					maxDepth = dep
+				} else if maxDepth-dep >= 2 && maxDepth != 0 {
+					// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
 					fmt.Println("******* find invalid  node **********")
-					fmt.Println("Tree: \n", flatten(t.root))
+					fmt.Printf("maxDepth: %d, dep: %d, Tree: \n%+v\nn: %+v\n", maxDepth, dep, flatten(t.root), n)
+					fmt.Printf("n.parent: %+v\nn.r: %+v\n", n.parent, n.r)
 					panic("")
 				}
-				maxDepth = dep
-			} else if maxDepth-dep >= 2 && maxDepth != 0 {
-				// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
-				fmt.Println("******* find invalid  node **********")
-				fmt.Printf("maxDepth: %d, dep: %d, Tree: \n%+v\nn: %+v\n", maxDepth, dep, flatten(t.root), n)
-				fmt.Printf("n.parent: %+v\nn.r: %+v\n", n.parent, n.r)
-				panic("")
 			}
 			_, path = path.Pop()
 			return checkRec(n.parent, see, path)
