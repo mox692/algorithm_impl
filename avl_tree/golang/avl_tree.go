@@ -408,10 +408,12 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				nrcopy := newNodeCopy(nr)
 				nrcopy.parent = nr.l
 				nrcopy.l = nil
+				nrcopy.r.parent = nrcopy
 				nr.key = nr.l.key
 				nr.val = nr.l.val
 				nr.r = nrcopy
 				nr.r.l = nrlr
+				nrlr.parent = nrcopy
 				nr.l = nil
 				// height合わせ
 				// ·nrr
@@ -437,6 +439,7 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				n.key = nr.key
 				n.l = ncopy
 				n.r = nr.r
+				nr.r.parent = n
 				// 高さ
 				// nl
 				n.l.lh = max(n.l.l.rh, n.l.l.lh) + 1
@@ -481,6 +484,7 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				n.key = n.r.key
 				n.val = n.r.val
 				n.r = n.r.r
+				n.r.parent = n
 
 				// nl(元々n)の挿入
 				ncopy.parent = n
@@ -564,10 +568,12 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				nlcopy := newNodeCopy(nl)
 				nlcopy.parent = nl.r
 				nlcopy.r = nil
+				nlcopy.l.parent = nlcopy
 				nl.key = nl.r.key
 				nl.val = nl.r.val
 				nl.l = nlcopy
 				nl.l.r = nlrl
+				nlrl.parent = nlcopy
 				nl.r = nil
 				// height合わせ
 				// ·nll
@@ -593,6 +599,7 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				n.key = nl.key
 				n.r = ncopy
 				n.l = nl.l
+				nl.l.parent = n
 				// 高さ
 				// nl
 				n.r.rh = max(n.r.r.rh, n.r.r.lh) + 1
@@ -658,6 +665,7 @@ func checkBalanceRec(n *node, path *util.Stack[direction], typ checkType) {
 				n.key = n.l.key
 				n.val = n.l.val
 				n.l = n.l.l
+				n.l.parent = n
 
 				// nl(元々n)の挿入
 				ncopy.parent = n
@@ -851,14 +859,17 @@ func checkTree(t *avlTree) bool {
 			if dep > maxDepth {
 				// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
 				if dep-maxDepth >= 2 && maxDepth != 0 {
+					fmt.Println("******* find invalid  node **********")
 					fmt.Println("Tree: \n", flatten(t.root))
-					panic("errrrrrrrrr")
+					panic("")
 				}
 				maxDepth = dep
 			} else if maxDepth-dep >= 2 && maxDepth != 0 {
 				// CHECK: lf, rhの値は不正でないか(差が2以上開いてないか)
+				fmt.Println("******* find invalid  node **********")
 				fmt.Printf("maxDepth: %d, dep: %d, Tree: \n%+v\nn: %+v\n", maxDepth, dep, flatten(t.root), n)
-				panic("errrrrrrrrr")
+				fmt.Printf("n.parent: %+v\nn.r: %+v\n", n.parent, n.r)
+				panic("")
 			}
 			_, path = path.Pop()
 			return checkRec(n.parent, see, path)

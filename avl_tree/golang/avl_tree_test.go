@@ -163,7 +163,7 @@ func Test_random(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	// s := rand.Perm(5)
 	// s := []int{1, 2, 0, 4, 3}
-	s := []int{4, 2, 5, 0, 1, 3}
+	s := []int{346, 130, 402, 253, 29, 249}
 	fmt.Println("aaaaaaaaaaaaa", s, "aaaaaaaaaaaaa")
 	tr := NewAvlTree()
 	for _, v := range s {
@@ -181,7 +181,7 @@ func Test_random(t *testing.T) {
 
 // func Test_randomNth(t *testing.T) {
 // 	items := 6
-// 	times := 1
+// 	times := 100
 // 	ss := make([][]int, times)
 // 	rand.Seed(time.Now().UnixNano())
 // 	s := rand.Perm(items * times)
